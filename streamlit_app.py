@@ -1,25 +1,35 @@
-
 import streamlit as st
-import pickle
+import pandas as pd
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
 
-# تحميل النموذج
-model = pickle.load(open("crisis_model.pkl", "rb"))
+# ------------------------
+# 1. بيانات تدريب وهمية
+# ------------------------
+X_train = pd.DataFrame({
+    "liquidity_ratio": [0.1, 0.4, 0.7, 0.2, 0.8],
+    "loan_to_deposit_ratio": [0.9, 0.3, 0.5, 0.6, 0.2],
+    "capital_adequacy": [0.05, 0.1, 0.12, 0.08, 0.15],
+})
+y_train = [1, 0, 0, 1, 0]  # 1 = أزمة مالية، 0 = آمن
 
-st.title("🔍 نظام التنبؤ بالأزمات المالية")
-st.subheader("أدخل بيانات البنك:")
+# تدريب النموذج
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
 
-clients = st.number_input("عدد العملاء", min_value=1000, step=100)
-late_loans = st.number_input("عدد القروض المتأخرة", min_value=0)
-usd_rate = st.number_input("سعر الدولار", min_value=0.0, format="%.2f")
-complaints = st.number_input("عدد الشكاوى", min_value=0)
-abnormal_withdrawals = st.number_input("عدد السحب غير الطبيعي", min_value=0)
+# ------------------------
+# 2. واجهة Streamlit
+# ------------------------
+st.title("🔍 تنبؤ بالأزمة المالية في البنوك")
 
-if st.button("تنــبــؤ"):
-    input_data = np.array([[clients, late_loans, usd_rate, complaints, abnormal_withdrawals]])
-    prediction = model.predict(input_data)[0]
+liquidity_ratio = st.slider("📉 Liquidity Ratio", 0.0, 1.0, 0.5)
+loan_to_deposit_ratio = st.slider("🏦 Loan to Deposit Ratio", 0.0, 1.0, 0.5)
+capital_adequacy = st.slider("💰 Capital Adequacy Ratio", 0.0, 0.2, 0.1)
 
-    if prediction == 1:
-        st.error("⚠️ هناك احتمال حدوث أزمة مالية!")
+if st.button("🔮 تنبأ"):
+    input_data = np.array([[liquidity_ratio, loan_to_deposit_ratio, capital_adequacy]])
+    prediction = model.predict(input_data)
+    if prediction[0] == 1:
+        st.error("⚠️ البنك في خطر أزمة مالية!")
     else:
-        st.success("✅ الوضع مستقر ولا يوجد خطر حالياً.")
+        st.success("✅ البنك في حالة مستقرة.")
