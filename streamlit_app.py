@@ -4,7 +4,9 @@ import pickle
 import numpy as np
 
 # تحميل النموذج
-model = pickle.load(open("crisis_model.pkl", "rb"))
+import os
+model_path = os.path.join(os.path.dirname(__file__), "crisis_model.pkl")
+model = pickle.load(open(model_path, "rb"))
 
 st.title("🔍 نظام التنبؤ بالأزمات المالية")
 st.subheader("أدخل بيانات البنك:")
